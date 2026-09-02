@@ -1,0 +1,1428 @@
+=== PAGE 1 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+1
+
+BAB II
+FONDASI PROYEK
+
+2.1
+ 
+Instalasi Proyek Laravel dan Konfigurasi Basis Data
+
+2.1.1)
+ 
+Perangkat yang Digunakan
+
+•
+ 
+XAMPP atau Laragon yang sudah berjalan (Apache/Nginx + MariaDB/MySQL)
+
+•
+ 
+Composer versi terbaru
+
+•
+ 
+PHP 8.2 atau lebih baru
+
+•
+ 
+Editor kode (VS Code)
+
+•
+ 
+Koneksi internet
+
+2.1.2)
+ 
+Periksa versi PHP
+
+Buka terminal, lalu jalankan :
+
+php -v
+
+composer -V
+
+Pastikan PHP menunjukkan versi 8.2 atau lebih tinggi. Bila masih 8.1 atau di bawahnya, Laravel 12
+keatas tidak akan bisa dipasang. Laporkan ke guru sebelum melanjutkan.
+
+2.1.3)
+ 
+Buat proyek baru
+
+Masuk ke folder tempat proyek disimpan, lalu:
+
+composer create-project laravel/laravel peminjaman-alat
+
+cd peminjaman-alat
+
+2.1.4)
+ 
+Pasang paket yang dibutuhkan
+
+Pada terminal, unduh paket yang dibutuhkan :
+
+composer require laravel/fortify spatie/laravel-permission barryvdh/laravel-dompdf
+
+composer require --dev barryvdh/laravel-debugbar
+
+Daftar paket dan alasan pemakainya :
+
+Paket
+ 
+Lingkungan
+ 
+Alasan
+
+laravel/fortify
+ 
+production
+ 
+Menyediakan mesin autentikasi (login,
+logout, pembatasan percobaan) tanpa
+memaksakan tampilan bawaan
+
+spatie/laravel-permission
+ 
+production
+ 
+Mengelola peran dan izin tiga level
+
+barryvdh/laravel-dompdf
+ 
+production
+ 
+Membuat laporan PDF tanpa perlu Node.js
+
+barryvdh/laravel-debugbar
+ 
+dev
+ 
+Menampilkan jumlah query dan waktu muat
+halaman
+
+[Page 1 has 0 image objects]
+
+=== PAGE 2 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+2
+
+2.1.5)
+ 
+Terbitkan berkas konfigurasi paket
+
+Pada terminal, jalankan perintah berikut :
+
+php artisan vendor:publish --provider="Laravel\Fortify\FortifyServiceProvider"
+
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+Perintah pertama menghasilkan
+ 
+config/fortify.php
+, folder
+ 
+app/Actions/Fortify/,
+ 
+dan berkas
+
+app/Providers/FortifyServiceProvider.php
+. Perintah kedua menghasilkan
+ 
+config/permission.php
+
+dan satu migration untuk lima tabel peran dan izin.
+
+2.1.6)
+ 
+Daftarkan FortifyServiceProvider
+
+Buka
+ 
+bootstrap/providers.php
+ 
+dan tambahkan barisnya:
+
+<?php
+
+return [
+
+App\Providers\AppServiceProvider::class,
+
+App\Providers\FortifyServiceProvider::class,
+
+];
+
+Tanpa baris ini, seluruh konfigurasi yang Anda tulis tidak akan pernah dijalankan.
+
+2.1.7)
+ 
+Hapus migration dua faktor
+
+Fortify menerbitkan satu migration yang menambahkan kolom autentikasi dua faktor ke tabel
+users. Fitur itu tidak dipakai, dan bila dibiarkan, tabel users tidak akan lagi cocok dengan kamus
+data yang Anda susun.
+
+Buka folder
+ 
+database/migrations/,
+ 
+cari berkas berakhiran
+
+_add_two_factor_columns_to_users_table.php
+, lalu
+ 
+hapus berkas tersebut
+.
+
+2.1.8)
+ 
+Sesuaikan konfigurasi MariaDB
+
+Buka
+ 
+config/database.php
+, cari bagian mysql, dan pastikan dua baris berikut bernilai persis seperti
+ini:
+
+'charset'
+ 
+=> 'utf8mb4',
+
+'collation' => 'utf8mb4_unicode_ci',
+
+Ini wajib. Laravel versi baru kadang memakai nilai bawaan
+ 
+utf8mb4_0900_ai_ci
+. Nilai itu hanya
+dikenal MySQL 8 dan akan membuat MariaDB menolak seluruh migration dengan pesan unknown
+collation.
+
+Selanjutnya buka berkas
+ 
+.env
+ 
+dan sesuaikan:
+
+APP_NAME="Peminjaman Alat"
+
+APP_TIMEZONE=Asia/Jakarta
+
+[Page 2 has 0 image objects]
+
+=== PAGE 3 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+3
+
+DB_CONNECTION=mysql
+
+DB_HOST=127.0.0.1
+
+DB_PORT=3306
+
+DB_DATABASE=peminjaman_alat
+
+DB_USERNAME=root
+
+DB_PASSWORD=
+
+2.1.9)
+ 
+Buat basis data kosong
+
+Buka phpMyAdmin di http://localhost/phpmyadmin, lalu buat basis data baru:
+
+•
+ 
+Nama:
+ 
+peminjaman_alat
+
+•
+ 
+Collation:
+ 
+utf8mb4_unicode_ci
+
+Jangan membuat satu tabel pun secara manual. Seluruh tabel akan dibuat lewat migration.
+
+2.1.10)
+ 
+Uji koneksi
+
+Pada terminal, jalankan perintah ini:
+
+php artisan migrate:fresh
+
+Hasil yang diharapkan: migrasi bawaan Laravel dan migrasi tabel peran dari paket otorisasi
+berjalan tanpa kesalahan. Periksa di phpMyAdmin, basis data kini berisi tabel bawaan (
+users
+,
+
+sessions
+,
+ 
+cache
+,
+ 
+jobs
+, dan seterusnya) serta lima tabel peran (
+roles
+,
+ 
+permissions
+,
+ 
+model_has_roles
+,
+
+model_has_permissions
+,
+ 
+role_has_permissions
+).
+
+Terakhir, jalankan server pengembangan di terminal:
+
+php artisan serve
+
+Buka
+ 
+http://127.0.0.1:8000
+. Halaman sambutan Laravel harus tampil, dan di bagian bawah layar
+muncul bilah Debugbar.
+
+[Page 3 has 1 image objects]
+
+=== PAGE 4 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+4
+
+2.2
+ 
+Migration Delapan Tabel dan Model Eloquent
+
+2.2.1)
+ 
+Sesuaikan tabel users
+
+Tabel users sudah ada sebagai bawaan Laravel, tetapi kolomnya belum sesuai kamus data. Buka
+berkas
+ 
+database/migrations/0001_01_01_000000_create_users_table.php
+ 
+dan ubah hanya bagian
+
+Schema::create('users', ...)
+. Dua tabel lain di berkas itu (
+password_reset_tokens dan sessions
+)
+biarkan apa adanya.
+
+Kolom email boleh kosong dan tetap berindeks unik. MariaDB mengizinkan banyak baris bernilai
+NULL pada indeks unik, jadi peminjam yang tidak punya email tidak akan bertabrakan satu sama
+lain.
+
+2.2.2)
+ 
+Buat tujuh berkas migration sekaligus
+
+Pada terminal jalankan berurutan, jangan diacak, karena urutan inilah yang menentukan urutan
+pembuatan tabel:
+
+php artisan make:migration create_kategori_table
+
+php artisan make:migration create_alat_table
+
+php artisan make:migration create_peminjaman_table
+
+php artisan make:migration create_detail_peminjaman_table
+
+php artisan make:migration create_pengembalian_table
+
+php artisan make:migration create_log_aktivitas_table
+
+php artisan make:migration create_pengaturan_table
+
+Nama berkas migration tetap memakai pola bahasa Inggris
+ 
+create_..._table
+ 
+karena Artisan
+memakai pola itu untuk menebak nama tabel secara otomatis. Selebihnya
+ 
+—
+ 
+nama tabel, nama
+kolom, nama variabel, dan nama method
+ 
+—
+ 
+seluruhnya berbahasa Indonesia.
+
+2.2.3)
+ 
+Isi migration kategori
+
+Buka file
+ 
+..._create_kategori_table.php
+:
+
+[Page 4 has 2 image objects]
+
+=== PAGE 5 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+5
+
+Kolom
+ 
+created_at
+ 
+dan
+ 
+updated_at
+ 
+tidak digambar di ERD karena bukan bagian dari model bisnis,
+tetapi tetap dibuat agar fitur bawaan Eloquent berjalan normal.
+
+2.2.4)
+ 
+Isi migration alat
+
+Berkas ini adalah yang pertama memuat foreign key dan CHECK constraint. Jangan lupa
+menambahkan use
+ 
+Illuminate\Support\Facades\DB
+; di bagian atas berkas.
+
+Buka file
+ 
+…_create_alat_table.php
+ 
+:
+
+Tiga hal yang perlu dipahami dari kode di atas:
+
+Bagian
+ 
+Alasan
+
+constrained('kategori')
+ 
+Nama tabel ditulis eksplisit. Tanpa itu Laravel menebak tabelnya
+bernama kategoris, dan migration gagal
+
+restrictOnDelete()
+ 
+Kategori yang masih dipakai alat tidak dapat dihapus.
+
+DB::statement
+ 
+untuk CHECK
+ 
+Schema Builder Laravel tidak menyediakan method untuk CHECK
+constraint, jadi ditulis sebagai SQL mentah
+
+[Page 5 has 2 image objects]
+
+=== PAGE 6 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+6
+
+CHECK aturan 0 <= stok_tersedia <= stok dijaga langsung oleh basis data, sehingga tetap berlaku
+walaupun ada kesalahan di kode PHP.
+
+2.2.5)
+ 
+Isi migration peminjaman
+
+Buka file
+ 
+….
+_create_peminjaman_table.php
+:
+
+Tabel ini punya
+ 
+dua
+ 
+foreign key ke tabel yang sama.
+ 
+user_id
+ 
+adalah peminjamnya,
+ 
+petugas_id
+
+adalah petugas yang memproses.
+ 
+petugas_id
+ 
+boleh kosong karena pengajuan yang baru masuk
+belum diproses siapa pun.
+
+Kolom
+ 
+status
+ 
+diberi
+ 
+->index()
+ 
+karena hampir setiap halaman daftar menyaring berdasarkan kolom
+ini.
+
+[Page 6 has 1 image objects]
+
+=== PAGE 7 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+7
+
+2.2.6)
+ 
+Isi migration detail_peminjaman
+
+Buka file
+ 
+…._create_detail_peminjaman_tabl
+e.php
+, dan tambahkan use
+
+Illuminate\Support\Facades\DB
+:
+
+Dua pilihan penting di sini:
+
+•
+ 
+cascadeOnDelete()
+ 
+ke
+ 
+peminjaman
+ 
+—
+ 
+bila data induk dihapus, baris detailnya ikut terhapus.
+Ini aman karena hanya mengizinkan penghapusan pengajuan yang belum pernah disetujui.
+
+•
+ 
+restrictOnDelete()
+ 
+ke
+ 
+alat
+ 
+—
+ 
+alat yang pernah dipinjam tidak boleh dihapus, karena
+riwayat transaksi harus tetap utuh.
+
+•
+ 
+unique(['peminjaman_id', 'alat_id'])
+ 
+—
+ 
+Satu alat hanya boleh muncul satu kali dalam satu
+pengajuan.
+
+Nilai
+ 
+kondisi_kembali
+ 
+sengaja kosong sampai alat benar-benar dikembalikan. Nilai kosong inilah
+yang dibaca untuk memutuskan alat mana yang kembali ke stok.
+
+[Page 7 has 1 image objects]
+
+=== PAGE 8 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+8
+
+2.2.7)
+ 
+Isi migration pengembalian
+
+Buka file
+ 
+…._create_pengembalian_table.php
+ 
+:
+
+peminjaman_id
+ 
+diberi
+ 
+->unique()
+ 
+karena relasinya satu ke satu: satu pengajuan hanya boleh
+menghasilkan satu baris pengembalian. Tanpa indeks unik ini, petugas yang tidak sengaja menekan
+tombol verifikasi dua kali akan membuat denda terhitung dua kali.
+
+Tiga kolom denda semuanya bernilai bawaan nol, karena isinya akan ditulis oleh trigger, bukan
+diketik manusia.
+
+2.2.8)
+ 
+Isi migration log_aktivitas dan pengaturan
+
+Buka file
+ 
+…_create_log_aktivitas_table.php
+ 
+:
+
+[Page 8 has 2 image objects]
+
+=== PAGE 9 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+9
+
+Tabel ini hanya punya
+ 
+created_at
+, tanpa
+ 
+updated_at
+, karena catatan log tidak pernah diubah. Kolom
+
+user_id
+ 
+boleh kosong supaya percobaan login yang gagal
+ 
+—
+ 
+yang pelakunya belum diketahui
+ 
+—
+
+tetap dapat dicatat.
+
+Buka file
+ 
+…._create_pengaturan_table.php
+:
+
+2.2.9)
+ 
+Jalankan migration
+
+Pada terminal jalan migration :
+
+php artisan migrate:fresh
+
+Perintah
+ 
+migrate:fresh
+ 
+menghapus seluruh tabel lalu membuatnya ulang dari awal. Aman dipakai
+sekarang karena belum ada satu pun data penting.
+
+Buka phpMyAdmin dan periksa: harus ada 8 tabel domain, 5 tabel peran dan izin, serta tabel
+infrastruktur bawaan Laravel.
+
+Uji juga bahwa CHECK constraint benar-benar bekerja. Jalankan perintah berikut di tab SQL
+phpMyAdmin:
+
+INSERT INTO kategori (nama, created_at, updated_at)
+
+VALUES ('Uji Coba', NOW(), NOW());
+
+INSERT INTO alat (kategori_id, kode_alat, nama, stok, stok_tersedia, kondisi, created_at,
+updated_at)
+
+VALUES (1, 'UJI-001', 'Alat Uji', 5, 9, 'baik', NOW(), NOW());
+
+Perintah kedua
+ 
+harus gagal
+, karena
+ 
+stok_tersedia
+ 
+bernilai 9 sementara stok hanya 5. Bila justru
+berhasil, CHECK constraint Anda tidak terpasang; periksa kembali Langkah 4. Setelah terbukti,
+jalankan lagi
+ 
+php artisan migrate:fresh
+ 
+untuk membersihkan data uji.
+
+[Page 9 has 1 image objects]
+
+=== PAGE 10 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+10
+
+2.2.10)
+ 
+Buat model Eloquent
+
+Pada terminal buat model :
+
+php artisan make:model Kategori
+
+php artisan make:model Alat
+
+php artisan make:model Peminjaman
+
+php artisan make:model DetailPeminjaman
+
+php artisan make:model Pengembalian
+
+php artisan make:model LogAktivitas
+
+php artisan make:model Pengaturan
+
+Laravel menebak nama tabel dengan menambahkan huruf
+ 
+s
+ 
+pada nama model. Karena seluruh
+tabel kita berbahasa Indonesia dan tidak berbentuk jamak,
+ 
+setiap model wajib menyebut nama
+tabelnya secara eksplisit
+.
+
+Buka file
+ 
+app\Models\Kategori.php
+ 
+:
+
+Buka file
+ 
+app\Models\Alat.php
+ 
+:
+
+Buka file
+ 
+app\Models\Peminjaman.php
+ 
+:
+
+[Page 10 has 3 image objects]
+
+=== PAGE 11 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+11
+
+Buka file
+ 
+app\Models\DetailPeminjaman.php
+ 
+:
+
+Buka file
+ 
+app\Models\Pengembalian.php
+ 
+:
+
+Buka file
+ 
+app\Models\LogAktivitas.php
+ 
+:
+
+Buka file
+ 
+app\Models\Pengaturan.php
+ 
+:
+
+public $timestamps = false
+ 
+pada
+ 
+LogAktivitas
+ 
+wajib ada. Tanpa itu Eloquent akan mencari kolom
+
+updated_at
+ 
+yang memang sengaja tidak dibuat, dan setiap penulisan log akan gagal.
+
+Method
+ 
+ambil()
+ 
+pada
+ 
+Pengaturan
+ 
+akan dipakai berkali-kali. Nilainya sengaja dibaca langsung dari
+basis data tanpa cache, supaya selalu sama dengan nilai yang dibaca trigger.
+
+[Page 11 has 4 image objects]
+
+=== PAGE 12 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+12
+
+Relasi antar model belum ditulis sekarang. Masing-masing akan ditambahkan pada job sheet yang
+membutuhkannya.
+
+[Page 12 has 0 image objects]
+
+=== PAGE 13 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+13
+
+2.3
+ 
+Peran, Izin, dan Seeder Data Awal
+
+2.3.1)
+ 
+Siapkan model User
+
+Buka file
+ 
+app\Models\User.php
+ 
+dan tambahkan trait dari paket otorisasi, lalu sesuaikan kolom yang
+boleh diisi:
+
+Trait
+ 
+HasRoles
+ 
+memberi model ini method
+ 
+assignRole()
+,
+ 
+hasRole()
+, dan
+ 
+can()
+ 
+yang akan dipakai di
+hampir seluruh job sheet berikutnya.
+
+Cast
+ 
+'password' => 'hashed'
+ 
+membuat Laravel otomatis mengubah password menjadi hash bcrypt
+setiap kali kolom itu diisi. Karena itu, mulai sekarang
+ 
+jangan pernah menulis
+ 
+Hash::make()
+ 
+secara
+manual
+ 
+—
+ 
+password akan ter-hash dua kali dan login selalu gagal.
+
+2.3.2)
+ 
+Daftarkan alias middleware
+
+Buka
+ 
+bootstrap/app.php
+ 
+dan lengkapi bagian
+ 
+withMiddleware
+:
+
+[Page 13 has 2 image objects]
+
+=== PAGE 14 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+14
+
+Tanpa pendaftaran ini, penulisan
+ 
+middleware('permission:alat.kelola')
+ 
+pada route akan
+menghasilkan kesalahan
+ 
+target class does not exist
+.
+
+2.3.3)
+ 
+Buat seeder peran dan izin
+
+Buka terminal buat seeder :
+
+php artisan make:seeder PeranIzinSeeder
+
+Isi file
+ 
+database/seeders/PeranIzinSeeder.php
+:
+
+[Page 14 has 2 image objects]
+
+=== PAGE 15 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+15
+
+Perhatikan pemetaannya terhadap matriks hak akses. Tidak ada satu pun izin yang dimiliki dua
+peran sekaligus. Admin
+ 
+tidak
+ 
+memiliki
+ 
+peminjaman.setujui
+, dan Petugas
+ 
+tidak
+ 
+memiliki
+
+alat.kelola
+.
+
+firstOrCreate
+ 
+dan
+ 
+syncPermissions
+ 
+dipakai supaya seeder aman dijalankan berulang kali.
+
+syncPermissions
+ 
+mengganti seluruh daftar izin peran dengan daftar baru, jadi bila nanti ada izin
+yang dihapus dari daftar, izin itu ikut terlepas dari perannya.
+
+2.3.4)
+ 
+Buat seeder pengguna
+
+Buka terminal buat seeder :
+
+php artisan make:seeder PenggunaSeeder
+
+Buka file
+ 
+database\seeders\PenggunaSeeder.php
+ 
+:
+
+[Page 15 has 2 image objects]
+
+=== PAGE 16 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+16
+
+Password ditulis polos di seeder, dan itu tidak masalah: cast
+ 
+'password' => 'hashed'
+ 
+pada model
+User mengubahnya menjadi hash bcrypt sebelum disimpan. Buktikan nanti dengan melihat kolom
+
+password
+ 
+di phpMyAdmin.
+
+2.3.5)
+ 
+Buat seeder pengaturan, kategori, dan alat
+
+Buka terminal ketikan perintah membuat seeder :
+
+php artisan make:seeder PengaturanSeeder
+
+php artisan make:seeder KategoriSeeder
+
+php artisan make:seeder AlatSeeder
+
+Buka file
+ 
+database\seeders\PengaturanSeeder.php
+ 
+:
+
+Ganti nilai
+ 
+nama_sekolah
+ 
+dengan nama sekolah Anda sendiri, karena nilai itu akan tercetak sebagai
+kop pada seluruh laporan PDF.
+
+[Page 16 has 2 image objects]
+
+=== PAGE 17 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+17
+
+Buka file
+ 
+database\seeders\KategoriSeeder.php
+ 
+:
+
+Buka file
+ 
+database\seeders\AlatSeeder.php
+ 
+:
+
+Saat pertama kali dibuat,
+ 
+stok_tersedia
+ 
+selalu sama dengan
+ 
+stok
+, karena belum ada satu unit pun
+yang dipinjam.
+
+Jangan lupa menambahkan pernyataan
+ 
+use
+ 
+di bagian atas tiap berkas seeder, misalnya use
+
+App\Models\Kategori;
+ 
+dan use
+ 
+App\Models\Alat;.
+
+[Page 17 has 2 image objects]
+
+=== PAGE 18 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+18
+
+2.3.6)
+ 
+Atur urutan pemanggilan seeder
+
+Buka file
+ 
+database/seeders/DatabaseSeeder.php
+:
+
+Urutannya tidak boleh diacak.
+ 
+PenggunaSeeder
+ 
+memanggil
+ 
+syncRoles(),
+ 
+jadi perannya harus sudah
+ada.
+ 
+AlatSeeder
+ 
+mencari kategori berdasarkan nama, jadi kategorinya harus sudah ada.
+
+Seeder untuk transaksi contoh belum dibuat sekarang, karena tabel peminjaman baru akan diisi
+lewat antarmuka.
+
+2.3.7)
+ 
+Jalankan dan periksa
+
+Pada terminal jalan migrate serta seednya dan reset cache permission :
+
+php artisan migrate:fresh --seed
+
+php artisan permission:cache-reset
+
+Perintah kedua wajib dijalankan setiap kali daftar izin berubah. Paket otorisasi menyimpan daftar
+izin di cache selama 24 jam, dan tanpa penyegaran, izin baru Anda tidak akan terbaca sampai
+besok.
+
+Periksa di phpMyAdmin:
+
+Tabel
+ 
+Jumlah baris yang diharapkan
+
+permissions
+ 
+13
+
+roles
+ 
+3
+
+role_has_permissions
+ 
+13
+
+model_has_roles
+ 
+3
+
+users
+ 
+3
+
+pengaturan
+ 
+4
+
+kategori
+ 
+4
+
+alat
+ 
+12
+
+[Page 18 has 1 image objects]
+
+=== PAGE 19 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+19
+
+2.4
+ 
+Autentikasi Fortify, Layout, dan Dasbor Tiga Peran
+
+2.4.1)
+ 
+Matikan fitur Fortify yang tidak dipakai
+
+Buka
+ 
+config/fortify.php
+ 
+dan sesuaikan empat bagian berikut:
+
+'guard' => 'web',
+
+'username' => 'username',
+
+'home' => '/dasbor',
+
+'features' => [
+
+// Seluruh fitur bawaan dimatikan.
+
+// Login dan logout tetap tersedia karena bukan bagian dari daftar ini.
+
+],
+
+Isian
+ 
+'features' => []
+ 
+mematikan registrasi mandiri, reset password, verifikasi email, autentikasi
+dua faktor, dan pembaruan profil. Semuanya di luar ruang lingkup, dan mematikannya sekarang
+mencegah munculnya halaman yang tidak pernah Anda buat tampilannya.
+
+2.4.2)
+ 
+Tulis logika autentikasi
+
+Buka
+ 
+app/Providers/FortifyServiceProvider.php
+. Ganti seluruh isinya:
+
+[Page 19 has 1 image objects]
+
+=== PAGE 20 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+20
+
+Bagian yang paling sering salah
+: cabang akun nonaktif harus melempar
+ 
+ValidationException
+,
+bukan sekadar mengembalikan
+ 
+null
+. Bila hanya mengembalikan
+ 
+null
+, Fortify menampilkan pesan
+gagal generik.
+
+Perhatikan juga bahwa
+ 
+catatLoginGagal()
+ 
+mengisi
+ 
+user_id
+ 
+dengan
+ 
+null
+ 
+pada cabang pertama. Inilah
+alasan kolom itu dibuat boleh kosong: saat username-nya tidak dikenal, memang tidak ada user
+yang bisa dicatat.
+
+[Page 20 has 2 image objects]
+
+=== PAGE 21 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+21
+
+2.4.3)
+ 
+Buat penentu tujuan setelah login
+
+Buat berkas baru
+ 
+app/Http/Responses/LoginResponse.php
+:
+
+2.4.4)
+ 
+Susun route
+
+Buka
+ 
+routes/web.php
+:
+
+Route
+ 
+login
+ 
+dan
+ 
+logout
+ 
+tidak perlu ditulis. Keduanya sudah didaftarkan Fortify secara otomatis.
+
+Ketiga dasbor untuk sementara masih berupa halaman kosong. Isinya akan bertambah seiring
+modul-modul berikutnya selesai.
+
+[Page 21 has 2 image objects]
+
+=== PAGE 22 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+22
+
+2.4.5)
+ 
+Buat layout utama
+
+Buat file
+ 
+resources/views/layouts/utama.blade.php
+:
+
+Buat file
+ 
+resources/views/layouts/navbar.blade.php
+:
+
+[Page 22 has 2 image objects]
+
+=== PAGE 23 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+23
+
+Menu di layout ini dibungkus
+ 
+@can
+, bukan
+ 
+@if
+ 
+yang membandingkan nama peran. Akibatnya, menu
+otomatis menyesuaikan izin yang Anda seed
+ 
+—
+ 
+bila izin berubah, menu ikut berubah tanpa
+menyentuh berkas ini.
+
+Tautan menu masih berisi tanda pagar. Alamat sebenarnya diisi pada job sheet yang membuat
+modulnya.
+
+2.4.6)
+ 
+Buat halaman login
+
+Buat file
+ 
+resources/views/auth/login.blade.php
+:
+
+[Page 23 has 2 image objects]
+
+=== PAGE 24 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+24
+
+Buat file
+ 
+resources\views\components\input.blade.php
+ 
+:
+
+2.4.7)
+ 
+Buat tiga halaman dasbor
+
+Buat
+ 
+resources/views/dasbor/admin.blade.php
+:
+
+Buat dua berkas serupa dengan mengganti judulnya:
+ 
+dasbor/petugas.blade.php
+ 
+dan
+
+dasbor/peminjam.blade.php
+.
+
+2.4.8)
+ 
+Uji seluruh cabang login
+
+Jalankan
+ 
+php artisan serve
+, lalu buka
+ 
+http://127.0.0.1:8000
+.
+
+Percobaan
+ 
+Masukan
+ 
+Hasil yang harus muncul
+
+1
+ 
+admin / password123
+ 
+Masuk ke Dasbor Admin, menu berisi Kategori, Alat,
+Pengguna
+
+2
+ 
+petugas / password123
+ 
+Masuk ke Dasbor Petugas, menu hanya berisi
+Persetujuan
+
+3
+ 
+peminjam / password123
+ 
+Masuk ke Dasbor Peminjam, menu hanya berisi
+Katalog Alat
+
+4
+ 
+admin / salah
+ 
+Tetap di halaman login, muncul pesan kredensial tidak
+cocok
+
+5
+ 
+Akun nonaktif
+ 
+Muncul pesan
+ 
+“
+Akun Anda dinonaktifkan
+”
+
+6
+ 
+Salah password 6 kali
+beruntun
+
+Ditolak sementara oleh pembatasan percobaan Fortify
+
+[Page 24 has 2 image objects]
+
+=== PAGE 25 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+25
+
+Halaman Login :
+
+Halaman dasbor admin :
+
+Halaman dasbor petugas :
+
+[Page 25 has 3 image objects]
+
+=== PAGE 26 ===
+
+ALDHI XAR : PROJECT PEMINJAMAN ALAT
+ 
+26
+
+Halaman dasbor peminjam :
+
+[Page 26 has 1 image objects]
