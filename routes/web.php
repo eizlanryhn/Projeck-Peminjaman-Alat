@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlatController;
+use App\Http\Controllers\DasborController;
 use App\Http\Controllers\KatalogController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\KoreksiPeminjamanController;
@@ -19,17 +20,17 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dasbor', function () {
-        return view('dasbor.admin');
-    })->middleware('role:admin')->name('admin.dasbor');
+    Route::get('/admin/dasbor', [DasborController::class, 'admin'])
+        ->middleware('role:admin')
+        ->name('admin.dasbor');
 
-    Route::get('/petugas/dasbor', function () {
-        return view('dasbor.petugas');
-    })->middleware('role:petugas')->name('petugas.dasbor');
+    Route::get('/petugas/dasbor', [DasborController::class, 'petugas'])
+        ->middleware('role:petugas')
+        ->name('petugas.dasbor');
 
-    Route::get('/peminjam/dasbor', function () {
-        return view('dasbor.peminjam');
-    })->middleware('role:peminjam')->name('peminjam.dasbor');
+    Route::get('/peminjam/dasbor', [DasborController::class, 'peminjam'])
+        ->middleware('role:peminjam')
+        ->name('peminjam.dasbor');
 
     // 3.1 - CRUD Kategori (admin only)
     Route::resource('kategori', KategoriController::class)

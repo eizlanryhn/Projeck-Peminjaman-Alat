@@ -18,7 +18,7 @@ class PenggunaSeeder extends Seeder
                 'peran' => 'admin',
             ],
             [
-                'nama' => 'Petugas Laboratorium',
+                'nama' => 'Petugas',
                 'username' => 'petugas',
                 'email' => 'petugas@sekolah.sch.id',
                 'no_telp' => '081200800002',
