@@ -51,9 +51,11 @@
                         @method('PUT')
 
                         <x-input label="Denda Kerusakan" name="denda_kerusakan" type="number"
-                            :value="(int) $pengembalian->denda_kerusakan" min="0" step="1000" required />
+                            :value="(int) $pengembalian->denda_kerusakan" min="0" max="99999999" step="1000" required />
 
-                        <x-textarea label="Catatan" name="catatan" :value="$pengembalian->catatan" />
+                        <x-textarea label="Catatan" name="catatan" :value="$pengembalian->catatan"
+                            minlength="5" maxlength="500"
+                            placeholder="Keterangan kondisi alat atau kerusakan (minimal 5 karakter)" />
 
                         <button type="submit" class="btn btn-primary">Simpan Koreksi</button>
                         <a href="{{ route('koreksi.pengembalian.daftar') }}" class="btn btn-secondary">Batal</a>

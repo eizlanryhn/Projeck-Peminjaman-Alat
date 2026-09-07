@@ -197,4 +197,52 @@ class MasterDataTest extends TestCase
             ])
             ->assertSessionHasErrors('username');
     }
+
+    public function test_nomor_telepon_harus_angka_8_sampai_15_digit(): void
+    {
+        $admin = User::where('username', 'admin')->first();
+
+        // Uji jika berisi huruf
+        $this->actingAs($admin)
+            ->post(route('pengguna.store'), [
+                'nama'                  => 'Pengguna Telp Huruf',
+                'username'              => 'pengguna_telp_huruf',
+                'no_telp'               => '0812abcd5678',
+                'password'              => 'password123',
+                'password_confirmation' => 'password123',
+                'peran'                 => 'peminjam',
+                'is_aktif'              => true,
+            ])
+            ->assertSessionHasErrors('no_telp');
+
+        // Uji jika kurang dari 8 digit
+        $this->actingAs($admin)
+            ->post(route('pengguna.store'), [
+                'nama'                  => 'Pengguna Telp Pendek',
+                'username'              => 'pengguna_telp_pendek',
+                'no_telp'               => '12345',
+                'password'              => 'password123',
+                'password_confirmation' => 'password123',
+                'peran'                 => 'peminjam',
+                'is_aktif'              => true,
+            ])
+            ->assertSessionHasErrors('no_telp');
+    }
+
+    public function test_semua_field_pengguna_wajib_diisi(): void
+    {
+        $admin = User::where('username', 'admin')->first();
+
+        $this->actingAs($admin)
+            ->post(route('pengguna.store'), [])
+            ->assertSessionHasErrors([
+                'nama',
+                'username',
+                'email',
+                'no_telp',
+                'password',
+                'peran',
+                'is_aktif',
+            ]);
+    }
 }

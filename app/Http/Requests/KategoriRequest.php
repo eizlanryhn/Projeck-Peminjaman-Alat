@@ -15,13 +15,14 @@ class KategoriRequest extends FormRequest
     public function rules(): array
     {
         $kategoriYangDiubah = $this->route('kategori');
+
         return [
             'nama' => [
                 'required',
                 'string',
+                'min:2',
                 'max:160',
-                Rule::unique('kategori', 'nama')
-                    ->ignore($kategoriYangDiubah),
+                Rule::unique('kategori', 'nama')->ignore($kategoriYangDiubah),
             ],
             'deskripsi' => ['nullable', 'string', 'max:1600'],
         ];
@@ -31,8 +32,10 @@ class KategoriRequest extends FormRequest
     {
         return [
             'nama.required' => 'Nama kategori wajib diisi.',
-            'nama.unique'   => 'Nama Kategori tersebut sudah terdaftar.',
-            'nama.max'      => 'Nama Kategori maksimal 160 karakter.',
+            'nama.min'      => 'Nama kategori minimal 2 karakter.',
+            'nama.max'      => 'Nama kategori maksimal 160 karakter.',
+            'nama.unique'   => 'Nama kategori tersebut sudah terdaftar.',
+            'deskripsi.max' => 'Deskripsi kategori maksimal 1.600 karakter.',
         ];
     }
 }

@@ -11,7 +11,8 @@
                         @method('PUT')
 
                         <x-input name="nama_sekolah" label="Nama Sekolah"
-                            :value="$pengaturan['nama_sekolah'] ?? ''" required />
+                            :value="$pengaturan['nama_sekolah'] ?? ''"
+                            minlength="5" maxlength="150" required />
                         <div class="form-text mb-3">
                             Tercetak sebagai kop pada seluruh laporan PDF.
                         </div>

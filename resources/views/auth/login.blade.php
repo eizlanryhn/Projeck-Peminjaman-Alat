@@ -11,7 +11,7 @@
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
                     <x-input name="username" label="Nama Pengguna" required autofocus />
-                    <x-input name="password" label="Kata Sandi" type="password" required value="" />
+                    <x-input-password name="password" label="Kata Sandi" required />
                     <button type="submit" class="btn btn-primary w-100">Masuk</button>
                 </form>
             </div>

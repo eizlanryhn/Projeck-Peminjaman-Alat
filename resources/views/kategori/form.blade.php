@@ -14,7 +14,9 @@
                         @if ($kategori->exists)
                             @method('PUT')
                         @endif
-                        <x-input name="nama" label="Nama Kategori" :value="$kategori->nama" />
+                        <x-input name="nama" label="Nama Kategori" :value="$kategori->nama"
+                            required
+                            minlength="2" maxlength="160" />
                         <x-textarea name="deskripsi" label="Deskripsi Kategori" :value="$kategori->deskripsi" />
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="{{ route('kategori.index') }}" class="btn btn-secondary">Batal</a>

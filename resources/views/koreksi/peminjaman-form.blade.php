@@ -52,9 +52,11 @@
                         <x-input label="Tanggal Harus Kembali" name="tgl_harus_kembali" type="date"
                             :value="$peminjaman->tgl_harus_kembali->toDateString()" required />
 
-                        <x-textarea label="Keperluan" name="keperluan" :value="$peminjaman->keperluan" />
+                        <x-textarea label="Keperluan" name="keperluan" :value="$peminjaman->keperluan"
+                            minlength="5" maxlength="500" />
 
-                        <x-textarea label="Alasan Tolak" name="alasan_tolak" :value="$peminjaman->alasan_tolak" />
+                        <x-textarea label="Alasan Tolak" name="alasan_tolak" :value="$peminjaman->alasan_tolak"
+                            minlength="5" maxlength="500" />
 
                         <div class="form-text mb-3">
                             BR-12: hanya keempat isian di atas yang boleh dikoreksi.
